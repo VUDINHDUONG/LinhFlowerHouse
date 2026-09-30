@@ -25,7 +25,10 @@ try {
   await page.locator(".catalog-card").first().getByRole("button", { name: /Xem ảnh & thông tin/ }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByRole("heading", { name: first.name, exact: true }).waitFor();
-  await dialog.getByRole("link", { name: /Hỏi về mẫu này qua Zalo/ }).waitFor();
+  await dialog.getByRole("button", { name: /Hỏi mẫu này qua Zalo/ }).waitFor();
+  const inquiry = await dialog.getByLabel("Nội dung hỏi sản phẩm").inputValue();
+  assert.ok(inquiry.includes(first.name), "Zalo inquiry includes the product name");
+  assert.match(inquiry, /Giá tham khảo:/, "Zalo inquiry includes the product price");
   assert.equal(await dialog.locator("img").first().getAttribute("alt"), `${first.name} – ảnh 1`);
   mkdirSync(new URL("../outputs/catalog-qa/", import.meta.url), { recursive: true });
   await page.screenshot({ path: new URL("mobile-catalog-detail.png", new URL("../outputs/catalog-qa/", import.meta.url)).pathname.replace(/^\/(\w:)/, "$1"), fullPage: true });
