@@ -24,7 +24,7 @@ Lệnh tạo D1 trả về `database_id`. Lưu giá trị đó để khai báo �
 
 Tạo Cloudflare API Token có quyền sửa Workers và D1 cho đúng tài khoản. Không đưa token hay mật khẩu vào mã nguồn.
 
-Tại Cloudinary Dashboard, lấy **Cloud name**, **API Key** và **API Secret** từ trang API Keys. Các giá trị này được lưu dạng secrets tại Cloudflare và GitHub, không đưa vào mã nguồn.
+Tại Cloudinary Dashboard, lấy **Cloud name**, **API Key** và **API Secret** từ trang API Keys. Các giá trị này được lưu dạng encrypted secrets tại Worker Cloudflare, không đưa vào mã nguồn hoặc GitHub.
 
 ## Tạo repo GitHub và khai báo secrets
 
@@ -35,12 +35,10 @@ Tạo một repository private trên GitHub, sau đó thêm các GitHub Actions 
 | `CLOUDFLARE_API_TOKEN` | API token vừa tạo |
 | `CLOUDFLARE_ACCOUNT_ID` | Account ID Cloudflare |
 | `CLOUDFLARE_D1_DATABASE_ID` | ID của `linh-flower-house-db` |
-| `ADMIN_PASSWORD` | Mật khẩu mạnh cho `/admin` production |
-| `CLOUDINARY_CLOUD_NAME` | Cloud name của Cloudinary |
-| `CLOUDINARY_API_KEY` | API Key của Cloudinary |
-| `CLOUDINARY_API_SECRET` | API Secret của Cloudinary |
 
-Khi push nhánh `main`, workflow sẽ deploy. URL `*.workers.dev` xuất hiện trong trang Actions và Cloudflare Workers.
+Khi push nhánh `main`, workflow sẽ deploy phiên bản Worker mới sau khi build xong. Khách tiếp tục dùng phiên bản cũ cho đến lúc phiên bản mới sẵn sàng. Ảnh Cloudinary và mật khẩu admin đã đặt tại Worker được giữ nguyên giữa các lần deploy. URL `*.workers.dev` xuất hiện trong trang Actions và Cloudflare Workers.
+
+Sản phẩm, danh mục và thông tin liên hệ không cần deploy: cập nhật từ `/admin` được ghi trực tiếp vào D1 và Cloudinary, sau đó khách thấy ngay.
 
 ## Tên miền riêng
 
