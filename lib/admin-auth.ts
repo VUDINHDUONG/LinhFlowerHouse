@@ -22,6 +22,13 @@ async function pbkdf2(password: string, salt: Uint8Array, iterations: number) {
   return new Uint8Array(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: salt.buffer as ArrayBuffer, iterations }, key, 256));
 }
 
+export async function createAdminPasswordHash(password: string) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iterations = 100_000;
+  const digest = await pbkdf2(password, salt, iterations);
+  return `pbkdf2-sha256$${iterations}$${base64Url(salt)}$${base64Url(digest)}`;
+}
+
 export async function verifyAdminPassword(password: string, stored: string) {
   const [algorithm, iterationsText, saltText, digestText] = stored.split("$");
   const iterations = Number(iterationsText);
@@ -49,4 +56,9 @@ export async function verifyAdminSession(value: string | undefined, signingKey: 
   if (extra.length || !/^[a-z0-9_-]{3,64}$/.test(username ?? "") || !Number.isInteger(expires) || expires * 1000 < Date.now() || !signature) return false;
   try { return sameBytes(fromBase64Url(signature), fromBase64Url(await sessionSignature(`${username}.${expires}`, signingKey))); }
   catch { return false; }
+}
+
+export async function adminSessionUsername(value: string | undefined, signingKey: string | undefined) {
+  if (!(await verifyAdminSession(value, signingKey))) return null;
+  return value!.split(".")[0];
 }

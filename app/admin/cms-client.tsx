@@ -80,7 +80,22 @@ function Content({ initial, action, busy }: { initial: Settings; action: Action;
   }, [dirty]);
   async function save(e: FormEvent) { e.preventDefault(); if (await action("/api/admin/settings", "PATCH", settings, "Đã lưu nội dung website.")) setSaved(settings); }
   const field = (key: string, title: string, multiline = false) => <label key={key}>{title}{multiline ? <textarea maxLength={key === "heroSubtitle" ? 500 : 200} value={settings[key] ?? ""} onChange={e => setSettings({ ...settings, [key]: e.target.value })} /> : <input type={key === "contactPhone" ? "tel" : key.startsWith("contact") ? "url" : "text"} maxLength={200} value={settings[key] ?? ""} onChange={e => setSettings({ ...settings, [key]: e.target.value })} />}</label>;
-  return <div className="cms-content"><section className="cms-panel content-panel"><Heading title="Nội dung & liên hệ" subtitle="TIẾNG NÓI CỦA CỬA HÀNG" /><form className="cms-form" onSubmit={save}><fieldset disabled={busy}>{field("announcement", "Thông báo đầu trang")}{field("heroTitle", "Tiêu đề trang chủ", true)}{field("heroSubtitle", "Lời giới thiệu", true)}{field("contactPhone", "Số điện thoại")}{field("contactZalo", "Liên kết Zalo")}{field("contactInstagram", "Liên kết Instagram")}{dirty && <small>Bạn có thay đổi chưa lưu.</small>}<SaveBar busy={busy} text="Lưu nội dung" /></fieldset></form></section></div>;
+  return <div className="cms-content"><section className="cms-panel content-panel"><Heading title="Nội dung & liên hệ" subtitle="TIẾNG NÓI CỦA CỬA HÀNG" /><form className="cms-form" onSubmit={save}><fieldset disabled={busy}>{field("announcement", "Thông báo đầu trang")}{field("heroTitle", "Tiêu đề trang chủ", true)}{field("heroSubtitle", "Lời giới thiệu", true)}{field("contactPhone", "Số điện thoại")}{field("contactZalo", "Liên kết Zalo")}{field("contactInstagram", "Liên kết Instagram")}{dirty && <small>Bạn có thay đổi chưa lưu.</small>}<SaveBar busy={busy} text="Lưu nội dung" /></fieldset></form></section><PasswordForm action={action} busy={busy} /></div>;
+}
+
+function PasswordForm({ action, busy }: { action: Action; busy: boolean }) {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmation, setConfirmation] = useState("");
+  async function save(event: FormEvent) {
+    event.preventDefault();
+    if (newPassword !== confirmation) return;
+    if (await action("/api/admin/change-password", "POST", { currentPassword, newPassword }, "Đã đổi mật khẩu quản trị.")) {
+      setCurrentPassword(""); setNewPassword(""); setConfirmation("");
+    }
+  }
+  const mismatch = confirmation.length > 0 && newPassword !== confirmation;
+  return <section className="cms-panel content-panel admin-password-panel"><Heading title="Bảo mật quản trị" subtitle="TÀI KHOẢN ĐANG ĐĂNG NHẬP" /><form className="cms-form" onSubmit={save}><fieldset disabled={busy}><p>Đổi mật khẩu trước khi bàn giao cho khách. Mật khẩu mới cần từ 10 ký tự, có chữ cái và số.</p><label>Mật khẩu hiện tại<input type="password" autoComplete="current-password" value={currentPassword} onChange={event => setCurrentPassword(event.target.value)} required maxLength={128} /></label><label>Mật khẩu mới<input type="password" autoComplete="new-password" value={newPassword} onChange={event => setNewPassword(event.target.value)} required minLength={10} maxLength={128} /></label><label>Nhập lại mật khẩu mới<input type="password" autoComplete="new-password" value={confirmation} onChange={event => setConfirmation(event.target.value)} required minLength={10} maxLength={128} /></label>{mismatch && <small className="cms-error">Mật khẩu nhập lại chưa khớp.</small>}<SaveBar busy={busy} disabled={mismatch} text="Đổi mật khẩu" /></fieldset></form></section>;
 }
 
 
