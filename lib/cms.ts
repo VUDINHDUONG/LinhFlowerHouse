@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { headers, cookies } from "next/headers";
 import { getDb } from "../db";
 import { categories, products, settings } from "../db/schema";
+import { verifyAdminSession } from "./admin-auth";
 
 export type ShopProduct = typeof products.$inferSelect;
 export type ShopCategory = typeof categories.$inferSelect;
@@ -86,9 +87,10 @@ export async function getShopSettings() {
 
 export async function isAdmin() {
   const adminPassword = import.meta.env.DEV ? env.ADMIN_LOCAL_TOKEN : env.ADMIN_PASSWORD;
+  const token = (await cookies()).get("linh_local_admin")?.value;
   if (adminPassword) {
-    const token = (await cookies()).get("linh_local_admin")?.value;
     if (token && token === adminPassword) return true;
+    if (await verifyAdminSession(token, adminPassword)) return true;
   }
   const requestHeaders = await headers();
   const userId = requestHeaders.get("oai-authenticated-user-id");

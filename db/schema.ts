@@ -47,3 +47,12 @@ export const settings = sqliteTable("settings", {
   value: text("value").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
+
+export const adminUsers = sqliteTable("admin_users", {
+  id: text("id").primaryKey(),
+  username: text("username").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  active: integer("active", { mode: "boolean" }).notNull().default(true),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
