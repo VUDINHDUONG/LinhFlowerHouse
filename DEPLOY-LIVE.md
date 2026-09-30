@@ -1,13 +1,13 @@
 # Đưa Linh Flower House lên web chính thức
 
-Website này cần Cloudflare **Workers**, D1 và R2 để trang quản trị, dữ liệu sản phẩm và ảnh hoạt động. Cloudflare Pages tĩnh không có đủ phần máy chủ cho ứng dụng này.
+Website này dùng Cloudflare **Workers**, D1 và **Cloudinary Free** để trang quản trị, dữ liệu sản phẩm và ảnh hoạt động. Cloudflare Pages tĩnh không có đủ phần máy chủ cho ứng dụng này.
 
 ## Đã có sẵn trong mã nguồn
 
 - Workflow GitHub Actions: `.github/workflows/deploy-cloudflare.yml`.
 - Worker tên `linh-flower-house`.
 - D1 tên `linh-flower-house-db`.
-- R2 tên `linh-flower-house-images`.
+- Ảnh sản phẩm lưu trên Cloudinary Free.
 - Mỗi lần đẩy nhánh `main`, GitHub sẽ build, áp dụng migration D1 và deploy Worker.
 
 ## Thiết lập Cloudflare một lần
@@ -18,12 +18,13 @@ Website này cần Cloudflare **Workers**, D1 và R2 để trang quản trị, d
 $env:PATH = "$PWD\.local-tools\node-v22.23.3-win-x64;$env:PATH"
 node node_modules/wrangler/bin/wrangler.js login
 node node_modules/wrangler/bin/wrangler.js d1 create linh-flower-house-db --location apac
-node node_modules/wrangler/bin/wrangler.js r2 bucket create linh-flower-house-images
 ```
 
 Lệnh tạo D1 trả về `database_id`. Lưu giá trị đó để khai báo ở GitHub. Lấy `Account ID` trong Cloudflare Dashboard, ở cột phải của trang quản lý tài khoản.
 
-Tạo Cloudflare API Token có quyền sửa Workers, D1 và R2 cho đúng tài khoản. Không đưa token hay mật khẩu vào mã nguồn.
+Tạo Cloudflare API Token có quyền sửa Workers và D1 cho đúng tài khoản. Không đưa token hay mật khẩu vào mã nguồn.
+
+Tại Cloudinary Dashboard, lấy **Cloud name**, **API Key** và **API Secret** từ trang API Keys. Các giá trị này được lưu dạng secrets tại Cloudflare và GitHub, không đưa vào mã nguồn.
 
 ## Tạo repo GitHub và khai báo secrets
 
@@ -35,6 +36,9 @@ Tạo một repository private trên GitHub, sau đó thêm các GitHub Actions 
 | `CLOUDFLARE_ACCOUNT_ID` | Account ID Cloudflare |
 | `CLOUDFLARE_D1_DATABASE_ID` | ID của `linh-flower-house-db` |
 | `ADMIN_PASSWORD` | Mật khẩu mạnh cho `/admin` production |
+| `CLOUDINARY_CLOUD_NAME` | Cloud name của Cloudinary |
+| `CLOUDINARY_API_KEY` | API Key của Cloudinary |
+| `CLOUDINARY_API_SECRET` | API Secret của Cloudinary |
 
 Khi push nhánh `main`, workflow sẽ deploy. URL `*.workers.dev` xuất hiện trong trang Actions và Cloudflare Workers.
 

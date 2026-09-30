@@ -8,7 +8,6 @@ if (!/^[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(databaseId ?? "")) {
 
 const workerName = process.env.CLOUDFLARE_WORKER_NAME?.trim() || "linh-flower-house";
 const databaseName = process.env.CLOUDFLARE_D1_DATABASE_NAME?.trim() || "linh-flower-house-db";
-const bucketName = process.env.CLOUDFLARE_R2_BUCKET_NAME?.trim() || "linh-flower-house-images";
 const source = resolve("dist/server/wrangler.json");
 const output = resolve("dist/server/wrangler.production.json");
 const config = JSON.parse(await readFile(source, "utf8"));
@@ -20,7 +19,7 @@ config.d1_databases = [{
   database_id: databaseId,
   migrations_dir: "../../drizzle",
 }];
-config.r2_buckets = [{ binding: "BUCKET", bucket_name: bucketName }];
+delete config.r2_buckets;
 
 await writeFile(output, `${JSON.stringify(config, null, 2)}\n`);
 console.log(`Production config written: ${output}`);

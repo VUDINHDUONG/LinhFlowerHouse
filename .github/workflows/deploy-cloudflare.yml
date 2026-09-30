@@ -16,9 +16,11 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+      CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
       CLOUDFLARE_WORKER_NAME: linh-flower-house
       CLOUDFLARE_D1_DATABASE_NAME: linh-flower-house-db
-      CLOUDFLARE_R2_BUCKET_NAME: linh-flower-house-images
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,4 +32,7 @@ jobs:
       - run: node scripts/write-production-config.mjs
       - run: npx wrangler d1 migrations apply DB --remote --config dist/server/wrangler.production.json
       - run: printf %s "$ADMIN_PASSWORD" | npx wrangler secret put ADMIN_PASSWORD --config dist/server/wrangler.production.json
+      - run: printf %s "$CLOUDINARY_CLOUD_NAME" | npx wrangler secret put CLOUDINARY_CLOUD_NAME --config dist/server/wrangler.production.json
+      - run: printf %s "$CLOUDINARY_API_KEY" | npx wrangler secret put CLOUDINARY_API_KEY --config dist/server/wrangler.production.json
+      - run: printf %s "$CLOUDINARY_API_SECRET" | npx wrangler secret put CLOUDINARY_API_SECRET --config dist/server/wrangler.production.json
       - run: npx wrangler deploy --config dist/server/wrangler.production.json
