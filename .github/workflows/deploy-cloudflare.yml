@@ -27,12 +27,29 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      - run: npm run build
-      - run: node scripts/write-production-config.mjs
-      - run: npx wrangler d1 migrations apply DB --remote --config dist/server/wrangler.production.json
-      - run: printf %s "$ADMIN_PASSWORD" | npx wrangler secret put ADMIN_PASSWORD --config dist/server/wrangler.production.json
-      - run: printf %s "$CLOUDINARY_CLOUD_NAME" | npx wrangler secret put CLOUDINARY_CLOUD_NAME --config dist/server/wrangler.production.json
-      - run: printf %s "$CLOUDINARY_API_KEY" | npx wrangler secret put CLOUDINARY_API_KEY --config dist/server/wrangler.production.json
-      - run: printf %s "$CLOUDINARY_API_SECRET" | npx wrangler secret put CLOUDINARY_API_SECRET --config dist/server/wrangler.production.json
-      - run: npx wrangler deploy --config dist/server/wrangler.production.json
+      - id: deployment_config
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_D1_DATABASE_ID" ] || [ -z "$ADMIN_PASSWORD" ] || [ -z "$CLOUDINARY_CLOUD_NAME" ] || [ -z "$CLOUDINARY_API_KEY" ] || [ -z "$CLOUDINARY_API_SECRET" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Deployment pending::Add the required GitHub Actions secrets to enable automatic deploys."
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.deployment_config.outputs.ready == 'true'
+        run: npm ci
+      - if: steps.deployment_config.outputs.ready == 'true'
+        run: npm run build
+      - if: steps.deployment_config.outputs.ready == 'true'
+        run: node scripts/write-production-config.mjs
+      - if: steps.deployment_config.outputs.ready == 'true'
+        run: npx wrangler d1 migrations apply DB --remote --config dist/server/wrangler.production.json
+      - if: steps.deployment_config.outputs.ready == 'true'
+        run: printf %s "$ADMIN_PASSWORD" | npx wrangler secret put ADMIN_PASSWORD --config dist/server/wrangler.production.json
+      - if: steps.deployment_config.outputs.ready == 'true'
+        run: printf %s "$CLOUDINARY_CLOUD_NAME" | npx wrangler secret put CLOUDINARY_CLOUD_NAME --config dist/server/wrangler.production.json
+      - if: steps.deployment_config.outputs.ready == 'true'
+        run: printf %s "$CLOUDINARY_API_KEY" | npx wrangler secret put CLOUDINARY_API_KEY --config dist/server/wrangler.production.json
+      - if: steps.deployment_config.outputs.ready == 'true'
+        run: printf %s "$CLOUDINARY_API_SECRET" | npx wrangler secret put CLOUDINARY_API_SECRET --config dist/server/wrangler.production.json
+      - if: steps.deployment_config.outputs.ready == 'true'
+        run: npx wrangler deploy --config dist/server/wrangler.production.json
